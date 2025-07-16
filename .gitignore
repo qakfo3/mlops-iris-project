@@ -1,0 +1,13 @@
+# .gitignore
+.env
+__pycache__/
+*.pyc
+*.ipynb_checkpoints
+models/*.pkl
+models/*.h5
+mlruns/ # MLflow artifacts and runs (папка с результатами экспериментов)
+venv/ # Virtual environment folder (если бы мы его использовали без Docker)
+
+# Docker-related
+.dockerignore
+.DS_Store # macOS specific
