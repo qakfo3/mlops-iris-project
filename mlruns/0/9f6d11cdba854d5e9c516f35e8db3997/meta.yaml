@@ -1,0 +1,15 @@
+artifact_uri: file:///app/mlruns/0/9f6d11cdba854d5e9c516f35e8db3997/artifacts
+end_time: 1752673472442
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9f6d11cdba854d5e9c516f35e8db3997
+run_name: puzzled-snake-662
+run_uuid: 9f6d11cdba854d5e9c516f35e8db3997
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1752673468535
+status: 3
+tags: []
+user_id: root
