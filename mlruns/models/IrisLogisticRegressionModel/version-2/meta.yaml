@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1752726692235
+current_stage: Production
+description: null
+last_updated_timestamp: 1752726694649
+name: IrisLogisticRegressionModel
+run_id: 4a360457775140ccbb40e5dabdf2b290
+run_link: null
+source: file:///app/mlruns/0/4a360457775140ccbb40e5dabdf2b290/artifacts/iris_model
+status: READY
+status_message: null
+storage_location: file:///app/mlruns/0/4a360457775140ccbb40e5dabdf2b290/artifacts/iris_model
+user_id: null
+version: 2

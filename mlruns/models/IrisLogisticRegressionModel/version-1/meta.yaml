@@ -1,8 +1,8 @@
 aliases: []
 creation_timestamp: 1752673472383
-current_stage: Production
+current_stage: Archived
 description: null
-last_updated_timestamp: 1752673507126
+last_updated_timestamp: 1752726694649
 name: IrisLogisticRegressionModel
 run_id: 9f6d11cdba854d5e9c516f35e8db3997
 run_link: null
