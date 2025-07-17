@@ -1,0 +1,77 @@
+# .github/workflows/main.yml
+
+name: MLOps Pipeline CI
+
+# Определяем, когда этот рабочий процесс будет запускаться
+on:
+  push:
+    branches:
+      - main # Запускать при пуше в ветку 'main'
+  workflow_dispatch: # Добавляем возможность запускать вручную из интерфейса GitHub Actions
+
+jobs:
+  build-and-run-pipeline:
+    runs-on: ubuntu-latest # Используем последнюю версию Ubuntu (Linux) в качестве ранера
+
+    steps:
+      # Шаг 1: Проверка репозитория
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Шаг 2: Настройка Git для DVC (нужно для DVC в CI/CD)
+      - name: Setup DVC
+        run: |
+          # В GitHub Actions окружении DVC может потребовать настройки SSH для работы с некоторыми ремоутами,
+          # даже если мы не используем его активно для пуша/пулла данных, а только для метаданных .dvc.
+          # Установка SSH-ключей - более сложная тема, для нашего примера, где данные генерируются,
+          # мы просто убедимся, что DVC установлен и доступен.
+          # Если бы у нас был внешний DVC remote, здесь нужна была бы аутентификация.
+
+      # Шаг 3: Сборка Docker образа
+      - name: Build Docker Image
+        run: docker build -t mlops-iris .
+
+      # Шаг 4: Запуск шага подготовки данных (создание iris.csv)
+      - name: Run Data Preparation
+        run: docker run --rm -v "$(pwd):/app" mlops-iris python src/data_preparation.py
+
+      # Шаг 5: Добавление iris.csv под контроль DVC
+      # DVC добавит .dvc файл, который будет зафиксирован в Git.
+      # Сами данные iris.csv будут находиться в ephemeral DVC cache на ранере.
+      # Если бы нам требовались ранее существовавшие данные, здесь бы был dvc pull.
+      - name: Add data to DVC
+        run: docker run --rm -v "$(pwd):/app" mlops-iris dvc add data/iris.csv
+
+      # Шаг 6: Запуск шага обучения модели (с логированием в MLflow)
+      - name: Run Model Training
+        run: docker run --rm -v "$(pwd):/app" mlops-iris python src/train_model.py
+
+      # Шаг 7: Запуск шага управления реестром моделей MLflow (перевод в Production)
+      - name: Run Model Registry Management
+        run: docker run --rm -v "$(pwd):/app" mlops-iris python src/manage_model_registry.py
+
+      # Шаг 8 (Опционально): Если бы мы хотели сохранить артефакты MLflow из mlruns/
+      # Внимание: для реального MLOps mlruns/ обычно отправляют на центральный MLflow Tracking Server.
+      # Этот шаг просто сохранит их как артефакты GitHub Actions, что не то же самое.
+      # - name: Upload MLflow artifacts
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: mlflow-runs
+      #     path: mlruns/
+
+      # Шаг 9: Коммит изменений, которые могли быть сделаны DVC (например, data/iris.csv.dvc)
+      # Если dvc add изменил .dvc файл, мы хотим его закоммитить и запушить.
+      - name: Commit DVC changes (if any)
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff-index --quiet HEAD || git commit -m "Automated: Update DVC tracked files [skip ci]"
+        continue-on-error: true # Продолжить, даже если нет изменений для коммита
+      
+      - name: Push DVC changes (if committed)
+        run: |
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Автоматически предоставленный токен
+        continue-on-error: true # Продолжить, даже если пуш не произошел (например, нет коммитов)
